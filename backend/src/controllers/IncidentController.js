@@ -31,7 +31,7 @@ module.exports = {
             value,
             ong_id
         });
-        return response.json({ id });
+        return response.status(201).json({ id });
     },
     async delete(request, response) {
         const { id } = request.params;
@@ -42,13 +42,17 @@ module.exports = {
         .select('ong_id')
         .first();
 
-        if(incident.ong_id != ong_id){
-            return response.status(401).json({error: "Unauthorized"});
+        try {
+            
+            if(incident.ong_id != ong_id){
+                return response.status(401).json({ error: "Unauthorized" });
+            }
+    
+            await connection('incidents').where('id', id).delete();
+            return response.status(204).send();
+            
+        } catch (error) {
+            return response.status(404).json({ error: "Incident Not Found" });
         }
-
-        await connection('incidents').where('id', id).delete();
-        return response.status(204).send();
-
     }
-
 }
